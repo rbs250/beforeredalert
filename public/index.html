@@ -15,7 +15,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#08080d;--s1:#0c0c14;--s2:#111119;--s3:#17171f;--s4:#1d1d28;
-  --red:#ef3340;--red2:#ff4d58;--amb:#f0a030;--grn:#10d870;--blu:#4094ff;--cyn:#40d8d0;
+  --red:#ef3340;--red2:#ff4d58;--amb:#f0a030;--grn:#10d870;--blu:#4094ff;
   --tx:#c8c8d8;--tx2:#808098;--tx3:#484860;--tx4:#2c2c3c;
   --brd:#181824;--brd2:#222234;
   --glass:rgba(12,12,20,.72);
@@ -39,16 +39,13 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
 .hdr-r{display:flex;align-items:center;gap:12px}
 .logo{display:flex;align-items:center;gap:8px}
 .logo-mark{
-  width:28px;height:28px;border-radius:6px;
-  background:var(--red);
-  display:grid;place-items:center;
-  font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;
+  width:28px;height:28px;border-radius:6px;background:var(--red);
+  display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;
   box-shadow:0 0 16px rgba(239,51,64,.3),inset 0 1px 0 rgba(255,255,255,.1);
 }
 .logo-txt{font-size:14px;font-weight:800;letter-spacing:1px;color:#fff}
 .logo-sub{font-size:9px;color:var(--tx3);letter-spacing:.5px;margin-right:8px}
 .hdr-l{display:flex;align-items:center;gap:8px}
-
 .clk{font-size:12px;color:var(--tx3);direction:ltr;letter-spacing:.5px}
 
 .pill{
@@ -73,17 +70,17 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
 /* ═══ MAP ═══ */
 #map{width:100%;height:100%;background:#080810}
 .leaflet-tile-pane{filter:saturate(.25) brightness(.75) contrast(1.2) hue-rotate(200deg)}
-.leaflet-control-zoom{display:none!important}
-.leaflet-control-attribution{display:none!important}
+.leaflet-control-zoom,.leaflet-control-attribution{display:none!important}
 .leaflet-popup-content-wrapper{background:var(--s2)!important;color:var(--tx)!important;border:1px solid var(--brd2)!important;border-radius:10px!important;box-shadow:0 12px 40px rgba(0,0,0,.6)!important;font-family:'Heebo',sans-serif!important}
 .leaflet-popup-tip{background:var(--s2)!important}
 .leaflet-popup-close-button{color:var(--tx3)!important;font-size:16px!important}
 
-/* Map HUD overlays */
+/* HUD */
 .hud{position:absolute;z-index:1000;pointer-events:none}
 .hud>*{pointer-events:auto}
-.hud-top{top:12px;right:12px;display:flex;gap:6px}
-.hud-bot{bottom:12px;left:50%;transform:translateX(-50%)}
+.hud-tr{top:12px;right:12px;display:flex;gap:6px}
+.hud-tl{top:12px;left:12px}
+.hud-bc{bottom:12px;left:50%;transform:translateX(-50%)}
 
 .chip{
   background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
@@ -91,36 +88,26 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
   font-size:10px;display:flex;align-items:center;gap:5px;
 }
 .chip .cd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.chip-warn{
-  background:rgba(240,160,48,.06);border-color:rgba(240,160,48,.15);
-  color:var(--amb);font-size:10px;white-space:nowrap;
-}
+.chip-w{background:rgba(240,160,48,.06);border-color:rgba(240,160,48,.15);color:var(--amb);font-size:10px;white-space:nowrap}
 
-/* Map realtime indicator */
 .map-rt{
-  position:absolute;top:12px;left:12px;z-index:1000;
   background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--brd);
   border-radius:8px;padding:6px 12px;font-size:10px;color:var(--tx3);
   display:flex;align-items:center;gap:6px;
 }
-.map-rt .rt-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.2s ease-in-out infinite}
+.map-rt .rd{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.2s ease-in-out infinite}
 
-/* Marker animations */
 @keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(4);opacity:0}}
 @keyframes core{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.8}}
 
-/* ═══ SIDE PANEL ═══ */
+/* ═══ SIDE ═══ */
 .side-hdr{
   padding:12px 14px;border-bottom:1px solid var(--brd);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
 }
 .side-title{font-size:12px;font-weight:700;color:var(--tx2);letter-spacing:.3px}
-.badge{
-  background:var(--s3);border-radius:4px;padding:1px 7px;
-  font-size:10px;color:var(--tx3);
-}
+.bdg{background:var(--s3);border-radius:4px;padding:1px 7px;font-size:10px;color:var(--tx3)}
 
-/* Filters */
 .ftrs{
   padding:8px 14px;border-bottom:1px solid var(--brd);
   display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;
@@ -137,29 +124,40 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
 .ft.f-info.on{color:var(--blu);border-color:rgba(64,148,255,.3);background:rgba(64,148,255,.06)}
 .ft-sep{width:1px;background:var(--brd);align-self:stretch;margin:0 2px}
 
-/* Alert feed */
-.feed{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 8px}
+/* ═══ FEED ═══ */
+.feed{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 8px;scroll-behavior:smooth}
 .feed::-webkit-scrollbar{width:3px}
 .feed::-webkit-scrollbar-track{background:transparent}
 .feed::-webkit-scrollbar-thumb{background:var(--tx4);border-radius:2px}
 
+/* ─── Card base ─── */
 .card{
   border:1px solid var(--brd);border-radius:10px;
   margin-bottom:5px;overflow:hidden;transition:.2s;
-  background:var(--s2);
-  animation:cardIn .25s ease-out;
+  background:var(--s2);animation:cardIn .25s ease-out;
 }
 .card:hover{border-color:var(--brd2);background:var(--s3)}
 @keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-.card.critical{border-color:rgba(239,51,64,.18)}
-.card.critical:hover{border-color:rgba(239,51,64,.3)}
-.card.warning{border-color:rgba(240,160,48,.12)}
+/* ─── Critical card — STANDS OUT ─── */
+.card.critical{
+  border-color:rgba(239,51,64,.25);
+  background:linear-gradient(90deg,rgba(239,51,64,.06) 0%,var(--s2) 40%);
+  box-shadow:inset 3px 0 12px -4px rgba(239,51,64,.2);
+}
+.card.critical:hover{border-color:rgba(239,51,64,.4)}
+.card.critical .card-txt{font-weight:500;color:#e0e0f0}
+
+/* ─── Warning card ─── */
+.card.warning{border-color:rgba(240,160,48,.15)}
+.card.warning:hover{border-color:rgba(240,160,48,.3)}
+
+/* ─── Info card ─── */
 .card.info{border-color:rgba(64,148,255,.12)}
 
 .card-in{display:flex}
-.stripe{width:3px;flex-shrink:0;border-radius:0 2px 2px 0}
-.card.critical .stripe{background:var(--red)}
+.stripe{width:3px;flex-shrink:0}
+.card.critical .stripe{background:var(--red);box-shadow:0 0 8px var(--red)}
 .card.warning .stripe{background:var(--amb)}
 .card.info .stripe{background:var(--blu)}
 .card.clear .stripe{background:var(--grn)}
@@ -173,19 +171,27 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
   margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
   font-size:9px;color:var(--tx4);direction:ltr;
 }
-.sev{
-  padding:2px 6px;border-radius:4px;font-weight:600;font-size:8.5px;
-  letter-spacing:.3px;text-transform:uppercase;
-}
-.sev.critical{background:rgba(239,51,64,.1);color:var(--red2)}
-.sev.warning{background:rgba(240,160,48,.08);color:var(--amb)}
-.sev.info{background:rgba(64,148,255,.08);color:var(--blu)}
-.sev.clear{background:rgba(16,216,112,.08);color:var(--grn)}
+.sv{padding:2px 6px;border-radius:4px;font-weight:600;font-size:8.5px;letter-spacing:.3px;text-transform:uppercase}
+.sv.critical{background:rgba(239,51,64,.12);color:var(--red2)}
+.sv.warning{background:rgba(240,160,48,.08);color:var(--amb)}
+.sv.info{background:rgba(64,148,255,.08);color:var(--blu)}
+.sv.clear{background:rgba(16,216,112,.08);color:var(--grn)}
 .loc{color:var(--tx3)}
-.ago{color:var(--tx4);font-style:italic}
+.ago{color:var(--tx4)}
 
-.card.flash{animation:flash 1s ease-out}
-@keyframes flash{0%{background:rgba(239,51,64,.1);border-color:rgba(239,51,64,.4)}50%{border-color:rgba(239,51,64,.2)}100%{background:var(--s2)}}
+/* Flash on new */
+.card.flash{animation:flash 1.2s ease-out}
+@keyframes flash{
+  0%{background:rgba(239,51,64,.15);border-color:rgba(239,51,64,.5);transform:scale(1.003)}
+  100%{background:var(--s2);transform:scale(1)}
+}
+.card.critical.flash{
+  animation:flash-crit 1.5s ease-out;
+}
+@keyframes flash-crit{
+  0%{background:rgba(239,51,64,.25);border-color:rgba(239,51,64,.6);box-shadow:0 0 20px rgba(239,51,64,.3)}
+  100%{background:linear-gradient(90deg,rgba(239,51,64,.06) 0%,var(--s2) 40%);box-shadow:inset 3px 0 12px -4px rgba(239,51,64,.2)}
+}
 
 .empty{text-align:center;padding:48px 20px;color:var(--tx3);font-size:13px}
 .spin{width:20px;height:20px;border:2px solid var(--brd);border-top-color:var(--red);border-radius:50%;animation:sp .6s linear infinite;margin:0 auto 14px}
@@ -196,8 +202,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
   .shell{grid-template-columns:1fr;grid-template-rows:48px 38vh 1fr}
   .map-wrap{grid-row:2}.side{grid-row:3;border-right:none;border-top:1px solid var(--brd)}
   .hdr{padding:0 12px}.logo-txt{font-size:12px}.logo-sub{display:none}
-  .side{min-height:0}.feed{padding:4px 6px}.ftrs{padding:6px 8px}
-  .clk{display:none}
+  .feed{padding:4px 6px}.ftrs{padding:6px 8px}.clk{display:none}
 }
 </style>
 </head>
@@ -222,19 +227,19 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
 
 <div class="map-wrap">
   <div id="map"></div>
-  <div class="map-rt"><span class="rt-dot"></span><span class="mono">REALTIME &lt;30 MIN</span></div>
-  <div class="hud hud-top">
+  <div class="hud hud-tl"><div class="map-rt"><span class="rd"></span><span class="mono">REALTIME &lt;30 MIN</span></div></div>
+  <div class="hud hud-tr">
     <div class="chip mono"><span class="cd" style="background:var(--red)"></span><span id="sc">0</span></div>
     <div class="chip mono"><span class="cd" style="background:var(--amb)"></span><span id="sw">0</span></div>
     <div class="chip mono"><span class="cd" style="background:var(--grn)"></span><span id="ut">--:--</span></div>
   </div>
-  <div class="hud hud-bot"><div class="chip chip-warn">⚠ לא רשמי — פעלו לפי פיקוד העורף</div></div>
+  <div class="hud hud-bc"><div class="chip chip-w">⚠ לא רשמי — פעלו לפי פיקוד העורף</div></div>
 </div>
 
 <div class="side">
   <div class="side-hdr">
     <span class="side-title">FEED</span>
-    <span class="badge mono" id="fc">0</span>
+    <span class="bdg mono" id="fc">0</span>
   </div>
   <div class="ftrs" id="ftrs">
     <button class="ft on" data-f="all">הכל</button>
@@ -253,27 +258,24 @@ body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
 </div>
 
 <script>
-// ═══ STATE ═══
 let all=[],known=new Set(),first=true,fSev='all',fReg=null,mks=[],sndOn=false,actx=null;
-const MAP_MAX_AGE=30; // only show markers < 30 min old
+const MAX_AGE=30;
 
-// ═══ MAP ═══
-const map=L.map('map',{center:[31.5,34.85],zoom:8,zoomControl:false,attributionControl:false});
+// ═══ MAP — tighter on Israel ═══
+const map=L.map('map',{center:[31.8,34.95],zoom:8.5,zoomControl:false,attributionControl:false,zoomSnap:0.1});
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:18,pane:'overlayPane'}).addTo(map);
 
 function mkIcon(sev,age){
-  const cols={critical:'#ef3340',warning:'#f0a030',info:'#4094ff',clear:'#10d870',default:'#484860'};
-  const c=cols[sev]||cols.default;
-  // Opacity decays: 1.0 at 0min → 0.3 at 30min
-  const op=Math.max(.3,1-(age/MAP_MAX_AGE)*.7).toFixed(2);
-  const sz=sev==='critical'?26:18;
+  const c={critical:'#ef3340',warning:'#f0a030',info:'#4094ff',clear:'#10d870',default:'#484860'}[sev]||'#484860';
+  const op=Math.max(.35,1-(age/MAX_AGE)*.65).toFixed(2);
+  const sz=sev==='critical'?28:sev==='warning'?20:16;
   const r=sz/2;
   return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[r,r],
     html:`<div style="opacity:${op};position:relative;width:${sz}px;height:${sz}px">
-      <div style="position:absolute;inset:0;background:${c};border-radius:50%;opacity:.2;animation:ring 2.2s ease-out infinite"></div>
-      ${sev==='critical'?`<div style="position:absolute;inset:-4px;background:${c};border-radius:50%;opacity:.1;animation:ring 2.2s ease-out .4s infinite"></div>`:''}
-      <div style="position:absolute;top:${sz*.25}px;left:${sz*.25}px;width:${sz*.5}px;height:${sz*.5}px;background:${c};border-radius:50%;box-shadow:0 0 10px ${c};animation:core 2s ease-in-out infinite"></div>
+      <div style="position:absolute;inset:0;background:${c};border-radius:50%;opacity:.22;animation:ring 2.2s ease-out infinite"></div>
+      ${sev==='critical'?`<div style="position:absolute;inset:-6px;background:${c};border-radius:50%;opacity:.1;animation:ring 2.2s ease-out .5s infinite"></div>`:''}
+      <div style="position:absolute;top:${sz*.25}px;left:${sz*.25}px;width:${sz*.5}px;height:${sz*.5}px;background:${c};border-radius:50%;box-shadow:0 0 10px ${c},0 0 20px ${c}30;animation:core 2s ease-in-out infinite"></div>
     </div>`
   });
 }
@@ -281,15 +283,14 @@ function mkIcon(sev,age){
 function updateMap(alerts){
   mks.forEach(m=>map.removeLayer(m));mks=[];
   const seen=new Set();
-  // Only recent alerts on map
-  const recent=alerts.filter(a=>(a.age||999)<MAP_MAX_AGE);
+  const recent=alerts.filter(a=>(a.age||999)<MAX_AGE);
   for(const a of recent){
     if(!a.locations)continue;
     for(const loc of a.locations){
       const k=`${loc.lat},${loc.lng}`;
       if(seen.has(k))continue;seen.add(k);
       const m=L.marker([loc.lat,loc.lng],{icon:mkIcon(a.severity,a.age||0)})
-        .bindPopup(`<div dir="rtl" style="font-family:Heebo;font-size:12px;max-width:200px;line-height:1.5;padding:2px">${a.text.substring(0,140)}${a.text.length>140?'…':''}<br><span style="color:var(--tx3);font-size:10px">${fmtAgo(a.age)}</span></div>`)
+        .bindPopup(`<div dir="rtl" style="font-family:Heebo;font-size:12px;max-width:200px;line-height:1.5;padding:2px">${a.text.substring(0,140)}${a.text.length>140?'…':''}<br><span style="color:#808098;font-size:10px">${fmtAgo(a.age)}</span></div>`)
         .addTo(map);
       mks.push(m);
     }
@@ -301,8 +302,7 @@ function beep(){
   if(!sndOn)return;
   if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();
-  o.connect(g);g.connect(actx.destination);
-  o.type='sine';
+  o.connect(g);g.connect(actx.destination);o.type='sine';
   o.frequency.setValueAtTime(1200,actx.currentTime);
   o.frequency.exponentialRampToValueAtTime(800,actx.currentTime+.15);
   o.frequency.exponentialRampToValueAtTime(1200,actx.currentTime+.3);
@@ -337,15 +337,14 @@ document.getElementById('ftrs').onclick=e=>{
 };
 
 // ═══ HELPERS ═══
-function fmtAgo(min){
-  if(min==null||min>999)return '';
-  if(min<1)return 'עכשיו';
-  if(min<60)return `לפני ${min} דק׳`;
-  return `לפני ${Math.floor(min/60)} שע׳`;
+function fmtAgo(m){
+  if(m==null||m>999)return '';
+  if(m<1)return 'עכשיו';
+  if(m<60)return `לפני ${m} דק׳`;
+  return `לפני ${Math.floor(m/60)} שע׳`;
 }
 function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
-
-function getFiltered(){
+function getF(){
   return all.filter(a=>{
     if(fSev!=='all'&&a.severity!==fSev)return false;
     if(fReg&&a.region!==fReg)return false;
@@ -354,15 +353,18 @@ function getFiltered(){
 }
 
 // ═══ RENDER ═══
-function render(){
-  const f=document.getElementById('feed'),show=getFiltered();
-  document.getElementById('fc').textContent=show.length;
-  if(!show.length){f.innerHTML='<div class="empty">אין התרעות</div>';return}
+let prevTop=null;
 
+function render(){
+  const fd=document.getElementById('feed'),show=getF();
+  document.getElementById('fc').textContent=show.length;
+  if(!show.length){fd.innerHTML='<div class="empty">אין התרעות</div>';return}
+
+  let hasNew=false;
   let h='';
   for(const a of show){
     const isNew=!first&&!known.has(a.id);
-    if(isNew&&a.severity==='critical')beep();
+    if(isNew){hasNew=true;if(a.severity==='critical')beep()}
     const t=a.datetime?new Date(a.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jerusalem'}):'';
     const sl={critical:'שיגור',warning:'אזהרה',info:'יירוט',clear:'שגרה'}[a.severity]||'';
     const locs=(a.locations||[]).map(l=>l.name).join(', ');
@@ -373,7 +375,7 @@ function render(){
       <div class="card-body">
         <div class="card-txt">${a.html||esc(a.text)}</div>
         <div class="card-foot mono">
-          ${sl?`<span class="sev ${a.severity}">${sl}</span>`:''}
+          ${sl?`<span class="sv ${a.severity}">${sl}</span>`:''}
           ${locs?`<span class="loc">📍 ${locs}</span>`:''}
           <span>${t}</span>
           ${ago?`<span class="ago">${ago}</span>`:''}
@@ -381,7 +383,10 @@ function render(){
       </div>
     </div></div>`;
   }
-  f.innerHTML=h;
+  fd.innerHTML=h;
+
+  // Auto-scroll to top on new alerts
+  if(hasNew) fd.scrollTo({top:0,behavior:'smooth'});
 }
 
 function process(alerts){
@@ -391,7 +396,7 @@ function process(alerts){
   alerts.forEach(a=>{if(a.severity==='critical')c++;if(a.severity==='warning')w++});
   document.getElementById('sc').textContent=c;
   document.getElementById('sw').textContent=w;
-  updateMap(getFiltered());
+  updateMap(getF());
   render();
   known=new Set(alerts.map(a=>a.id));
   first=false;

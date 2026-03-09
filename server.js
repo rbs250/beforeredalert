@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 3000;
 const SCRAPE_URL = 'https://t.me/s/beforeredalert';
 const POLL_INTERVAL = 12000;
 
+// ─── Spam / ad detection ──────────────────────────────────
 const AD_PATTERNS = [
   /תוכן\s*שיווקי/i, /תוכןשיווקי/i,
   /השקעה|השקעות|מסחר|טריידינג|trading/i,
@@ -19,6 +20,38 @@ const AD_PATTERNS = [
   /🚫.*🚫/, /t\.me\/\+/, /פרסומת/i,
 ];
 
+// ─── Watermark patterns to strip from messages ────────────
+const WATERMARKS = [
+  /🔥?\s*שתפו[-–]?\s*https?:\/\/t\.me\/beforeredalert/gi,
+  /שתפו\s*את\s*הקישור\s*שלנו\s*זה\s*בחינם\.?/gi,
+  /https?:\/\/t\.me\/beforeredalert/gi,
+  /שתפו[-–]?/g,
+];
+
+function stripWatermarks(text) {
+  let clean = text;
+  for (const pat of WATERMARKS) {
+    clean = clean.replace(pat, '');
+  }
+  // Clean up leftover whitespace, emojis-only lines, multiple newlines
+  clean = clean.replace(/^\s*🔥\s*$/gm, '');
+  clean = clean.replace(/\n{3,}/g, '\n\n');
+  return clean.trim();
+}
+
+function stripWatermarksHtml(html) {
+  let clean = html;
+  // Remove link tags pointing to the channel
+  clean = clean.replace(/<a[^>]*href="https?:\/\/t\.me\/beforeredalert"[^>]*>.*?<\/a>/gi, '');
+  for (const pat of WATERMARKS) {
+    clean = clean.replace(pat, '');
+  }
+  clean = clean.replace(/^\s*🔥\s*$/gm, '');
+  clean = clean.replace(/(<br\s*\/?>){3,}/gi, '<br>');
+  return clean.trim();
+}
+
+// ─── Locations ────────────────────────────────────────────
 const LOCATIONS = {
   'תל אביב':{lat:32.085,lng:34.782,r:'מרכז'},'ת"א':{lat:32.085,lng:34.782,r:'מרכז'},
   'ירושלים':{lat:31.768,lng:35.214,r:'ירושלים'},'חיפה':{lat:32.794,lng:34.990,r:'צפון'},
@@ -46,6 +79,7 @@ const LOCATIONS = {
   'קו העימות':{lat:33.10,lng:35.55,r:'צפון'},
   'גליל עליון':{lat:33.05,lng:35.50,r:'צפון'},'גליל תחתון':{lat:32.80,lng:35.40,r:'צפון'},
   'עמק יזרעאל':{lat:32.62,lng:35.30,r:'צפון'},
+  'לבנון':{lat:33.10,lng:35.40,r:'צפון'},'איראן':{lat:32.80,lng:35.20,r:'צפון'},
 };
 
 let alertCache = [], lastUpdate = null, connectionStatus = 'connecting';
@@ -81,16 +115,23 @@ async function scrape(){
       const $b=$(el).find('.tgme_widget_message_bubble');
       const id=$b.attr('data-post')||`m${i}`;
       const tEl=$b.find('.tgme_widget_message_text');
-      const html=tEl.html()||'', plain=tEl.text()||'';
+      let html=tEl.html()||'', plain=tEl.text()||'';
       const dt=$b.find('.tgme_widget_message_date time').attr('datetime')||'';
       const views=$b.find('.tgme_widget_message_views').text().trim();
-      if(plain.trim()&&!isAd(plain)){
-        const ts=dt?new Date(dt).getTime():Date.now();
-        const locs=extractLocs(plain);
-        msgs.push({id,html,text:plain.trim(),datetime:dt,timestamp:ts,
-          age:Math.round((Date.now()-ts)/60000),
-          views,severity:classify(plain),locations:locs,region:locs[0]?.region||null});
-      }
+
+      if(!plain.trim()||isAd(plain)) return;
+
+      // Strip watermarks
+      plain = stripWatermarks(plain);
+      html = stripWatermarksHtml(html);
+
+      if(!plain.trim()) return; // Empty after stripping
+
+      const ts=dt?new Date(dt).getTime():Date.now();
+      const locs=extractLocs(plain);
+      msgs.push({id,html,text:plain,datetime:dt,timestamp:ts,
+        age:Math.round((Date.now()-ts)/60000),
+        views,severity:classify(plain),locations:locs,region:locs[0]?.region||null});
     });
     msgs.sort((a,b)=>b.timestamp-a.timestamp);
     if(msgs.length>0){alertCache=msgs;lastUpdate=new Date().toISOString();connectionStatus='live';}
@@ -105,7 +146,6 @@ app.get('/api/stream',(req,res)=>{
   send({type:'init',alerts:alertCache.slice(0,80),status:connectionStatus,lastUpdate});
   const iv=setInterval(async()=>{
     const old=alertCache[0]?.id; await scrape();
-    // Refresh ages
     alertCache.forEach(a=>a.age=Math.round((Date.now()-a.timestamp)/60000));
     if(alertCache[0]?.id!==old) send({type:'update',alerts:alertCache.slice(0,80),status:connectionStatus,lastUpdate});
     else send({type:'heartbeat',alerts:alertCache.slice(0,80),status:connectionStatus,lastUpdate});
@@ -116,7 +156,7 @@ app.get('/api/stream',(req,res)=>{
 app.get('/api/alerts',(req,res)=>res.json({status:connectionStatus,lastUpdate,alerts:alertCache.slice(0,80)}));
 
 app.listen(PORT,async()=>{
-  console.log(`\n🚨 COMMAND CENTER v4 — http://localhost:${PORT}\n`);
+  console.log(`\n🚨 SIGINT v5 — http://localhost:${PORT}\n`);
   await scrape();
-  console.log(`   ${alertCache.length} alerts loaded (ads filtered)\n`);
+  console.log(`   ${alertCache.length} alerts loaded\n`);
 });
