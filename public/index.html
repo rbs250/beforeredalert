@@ -3,405 +3,416 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>COMMAND CENTER — התרעות שיגורים</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚨</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#08080d">
+<title>SIGINT — Live Alert Feed</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◉</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-:root {
-  --bg: #060609;
-  --s1: #0b0b12;
-  --s2: #101018;
-  --s3: #16161f;
-  --s4: #1c1c28;
-  --red: #ff2230;
-  --red-g: rgba(255,34,48,.25);
-  --amb: #ffa800;
-  --amb-g: rgba(255,168,0,.2);
-  --grn: #00e87b;
-  --grn-g: rgba(0,232,123,.15);
-  --blu: #3a8bff;
-  --txt: #d8d8e8;
-  --dim: #50506a;
-  --mut: #2e2e42;
-  --brd: #1a1a28;
-  --brd2: #252538;
-}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--txt);font-family:'Heebo',sans-serif;height:100vh;height:100dvh;overflow:hidden}
-.mono{font-family:'IBM Plex Mono',monospace}
+:root{
+  --bg:#08080d;--s1:#0c0c14;--s2:#111119;--s3:#17171f;--s4:#1d1d28;
+  --red:#ef3340;--red2:#ff4d58;--amb:#f0a030;--grn:#10d870;--blu:#4094ff;--cyn:#40d8d0;
+  --tx:#c8c8d8;--tx2:#808098;--tx3:#484860;--tx4:#2c2c3c;
+  --brd:#181824;--brd2:#222234;
+  --glass:rgba(12,12,20,.72);
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:'Heebo',sans-serif}
+.mono{font-family:'DM Mono',monospace}
 
-/* ═══ GRID ═══ */
-.app{display:grid;grid-template-rows:auto 1fr;grid-template-columns:1fr 420px;height:100vh;height:100dvh}
-.header{grid-column:1/-1}
-.map-panel{position:relative;overflow:hidden}
-.feed-panel{background:var(--s1);border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+/* ═══ LAYOUT ═══ */
+.shell{display:grid;grid-template-rows:48px 1fr;grid-template-columns:1fr 400px;height:100vh;height:100dvh}
+.hdr{grid-column:1/-1}
+.map-wrap{position:relative;overflow:hidden}
+.side{background:var(--s1);border-right:1px solid var(--brd);display:flex;flex-direction:column}
 
 /* ═══ HEADER ═══ */
-.header{
-  background:var(--s1);border-bottom:1px solid var(--brd);
-  padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;
-  z-index:100;
+.hdr{
+  background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--brd);padding:0 16px;
+  display:flex;align-items:center;justify-content:space-between;z-index:200;
 }
-.h-right{display:flex;align-items:center;gap:14px}
-.brand{display:flex;align-items:center;gap:10px}
-.brand-icon{
-  width:32px;height:32px;border-radius:7px;
-  background:linear-gradient(135deg,var(--red),#a00);
-  display:grid;place-items:center;font-size:15px;
-  box-shadow:0 0 20px var(--red-g);
+.hdr-r{display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-mark{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--red);
+  display:grid;place-items:center;
+  font-size:11px;font-weight:700;color:#fff;letter-spacing:1px;
+  box-shadow:0 0 16px rgba(239,51,64,.3),inset 0 1px 0 rgba(255,255,255,.1);
 }
-.brand h1{font-size:15px;font-weight:800;letter-spacing:-.3px}
-.brand .sub{font-size:9px;color:var(--dim);letter-spacing:1.5px;font-weight:500}
-.h-left{display:flex;align-items:center;gap:10px}
-.clock{font-size:13px;color:var(--dim);direction:ltr;min-width:62px;letter-spacing:.5px}
-.live{
-  display:flex;align-items:center;gap:6px;
-  padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:1.5px;
-  border:1px solid rgba(255,34,48,.2);background:rgba(255,34,48,.06);color:var(--red);
-}
-.live .d{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.4s ease-in-out infinite}
-.live.ok{border-color:rgba(0,232,123,.2);background:rgba(0,232,123,.05);color:var(--grn)}
-.live.ok .d{background:var(--grn)}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-.snd-btn{
-  width:30px;height:30px;border-radius:5px;border:1px solid var(--brd);
-  background:var(--s2);color:var(--dim);cursor:pointer;font-size:13px;
-  display:grid;place-items:center;transition:.15s;
-}
-.snd-btn:hover{border-color:var(--dim);color:var(--txt)}
-.snd-btn.on{border-color:var(--grn);color:var(--grn);background:rgba(0,232,123,.05)}
+.logo-txt{font-size:14px;font-weight:800;letter-spacing:1px;color:#fff}
+.logo-sub{font-size:9px;color:var(--tx3);letter-spacing:.5px;margin-right:8px}
+.hdr-l{display:flex;align-items:center;gap:8px}
 
-/* ═══ MAP — BRIGHTER ═══ */
-#map{width:100%;height:100%;background:#0a0e14}
-/* Much brighter than v2 */
-.leaflet-tile-pane{filter:saturate(.35) brightness(.85) contrast(1.15)}
-.leaflet-control-zoom{border:1px solid var(--brd)!important;border-radius:6px!important;overflow:hidden}
-.leaflet-control-zoom a{background:var(--s2)!important;color:var(--dim)!important;border:none!important;width:28px!important;height:28px!important;line-height:28px!important;font-size:14px!important}
-.leaflet-control-zoom a:hover{background:var(--s3)!important;color:var(--txt)!important}
+.clk{font-size:12px;color:var(--tx3);direction:ltr;letter-spacing:.5px}
+
+.pill{
+  display:flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:100px;font-size:10px;font-weight:500;letter-spacing:1px;
+  border:1px solid var(--brd);
+}
+.pill.live{border-color:rgba(16,216,112,.25);color:var(--grn)}
+.pill.live .dot{width:5px;height:5px;border-radius:50%;background:var(--grn);box-shadow:0 0 6px var(--grn);animation:blink 1.5s ease-in-out infinite}
+.pill.err{border-color:rgba(239,51,64,.2);color:var(--red)}
+.pill.err .dot{background:var(--red);box-shadow:0 0 6px var(--red)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+.ibtn{
+  width:28px;height:28px;border-radius:6px;border:1px solid var(--brd);
+  background:transparent;color:var(--tx3);cursor:pointer;font-size:12px;
+  display:grid;place-items:center;transition:.2s;
+}
+.ibtn:hover{border-color:var(--tx3);color:var(--tx)}
+.ibtn.on{border-color:var(--grn);color:var(--grn)}
+
+/* ═══ MAP ═══ */
+#map{width:100%;height:100%;background:#080810}
+.leaflet-tile-pane{filter:saturate(.25) brightness(.75) contrast(1.2) hue-rotate(200deg)}
+.leaflet-control-zoom{display:none!important}
 .leaflet-control-attribution{display:none!important}
-.leaflet-popup-content-wrapper{background:var(--s2)!important;color:var(--txt)!important;border:1px solid var(--brd)!important;border-radius:8px!important;box-shadow:0 8px 32px rgba(0,0,0,.5)!important}
+.leaflet-popup-content-wrapper{background:var(--s2)!important;color:var(--tx)!important;border:1px solid var(--brd2)!important;border-radius:10px!important;box-shadow:0 12px 40px rgba(0,0,0,.6)!important;font-family:'Heebo',sans-serif!important}
 .leaflet-popup-tip{background:var(--s2)!important}
-.leaflet-popup-close-button{color:var(--dim)!important}
+.leaflet-popup-close-button{color:var(--tx3)!important;font-size:16px!important}
 
-/* Map overlay stats */
-.map-stats{
-  position:absolute;top:12px;right:12px;z-index:1000;
-  display:flex;gap:6px;
-}
-.mstat{
-  background:rgba(6,6,9,.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--brd);border-radius:6px;padding:5px 10px;
+/* Map HUD overlays */
+.hud{position:absolute;z-index:1000;pointer-events:none}
+.hud>*{pointer-events:auto}
+.hud-top{top:12px;right:12px;display:flex;gap:6px}
+.hud-bot{bottom:12px;left:50%;transform:translateX(-50%)}
+
+.chip{
+  background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--brd);border-radius:8px;padding:6px 12px;
   font-size:10px;display:flex;align-items:center;gap:5px;
 }
-.mstat .sd{width:5px;height:5px;border-radius:50%}
-
-.map-disclaimer{
-  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:1000;
-  background:rgba(6,6,9,.75);backdrop-filter:blur(8px);
-  border:1px solid rgba(255,168,0,.12);border-radius:6px;padding:5px 12px;
-  font-size:10px;color:var(--amb);white-space:nowrap;
+.chip .cd{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.chip-warn{
+  background:rgba(240,160,48,.06);border-color:rgba(240,160,48,.15);
+  color:var(--amb);font-size:10px;white-space:nowrap;
 }
 
-/* Pulse marker animations */
-@keyframes pulse-ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.5);opacity:0}}
-@keyframes pulse-core{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-
-/* ═══ FEED PANEL ═══ */
-.feed-head{
-  padding:10px 16px;border-bottom:1px solid var(--brd);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
+/* Map realtime indicator */
+.map-rt{
+  position:absolute;top:12px;left:12px;z-index:1000;
+  background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--brd);
+  border-radius:8px;padding:6px 12px;font-size:10px;color:var(--tx3);
+  display:flex;align-items:center;gap:6px;
 }
-.feed-head h2{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
-.feed-count{
-  background:var(--s3);border-radius:4px;padding:1px 6px;
-  font-size:10px;color:var(--dim);font-weight:600;
+.map-rt .rt-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.2s ease-in-out infinite}
+
+/* Marker animations */
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(4);opacity:0}}
+@keyframes core{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.8}}
+
+/* ═══ SIDE PANEL ═══ */
+.side-hdr{
+  padding:12px 14px;border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.side-title{font-size:12px;font-weight:700;color:var(--tx2);letter-spacing:.3px}
+.badge{
+  background:var(--s3);border-radius:4px;padding:1px 7px;
+  font-size:10px;color:var(--tx3);
 }
 
 /* Filters */
-.filters{
-  padding:8px 16px;border-bottom:1px solid var(--brd);
-  display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;
+.ftrs{
+  padding:8px 14px;border-bottom:1px solid var(--brd);
+  display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;
 }
-.fbtn{
-  padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;
-  border:1px solid var(--brd);background:var(--s2);color:var(--dim);
-  cursor:pointer;transition:.15s;white-space:nowrap;
+.ft{
+  padding:4px 10px;border-radius:6px;font-size:10.5px;font-weight:500;
+  border:1px solid var(--brd);background:transparent;color:var(--tx3);
+  cursor:pointer;transition:.2s;letter-spacing:.2px;
 }
-.fbtn:hover{border-color:var(--dim);color:var(--txt)}
-.fbtn.active{border-color:var(--grn);color:var(--grn);background:rgba(0,232,123,.06)}
-.fbtn.sev-critical.active{border-color:var(--red);color:var(--red);background:rgba(255,34,48,.06)}
-.fbtn.sev-warning.active{border-color:var(--amb);color:var(--amb);background:rgba(255,168,0,.06)}
-.fbtn.sev-info.active{border-color:var(--blu);color:var(--blu);background:rgba(58,139,255,.06)}
+.ft:hover{border-color:var(--tx3);color:var(--tx2)}
+.ft.on{color:var(--tx);background:var(--s3);border-color:var(--brd2)}
+.ft.f-crit.on{color:var(--red);border-color:rgba(239,51,64,.3);background:rgba(239,51,64,.06)}
+.ft.f-warn.on{color:var(--amb);border-color:rgba(240,160,48,.3);background:rgba(240,160,48,.06)}
+.ft.f-info.on{color:var(--blu);border-color:rgba(64,148,255,.3);background:rgba(64,148,255,.06)}
+.ft-sep{width:1px;background:var(--brd);align-self:stretch;margin:0 2px}
 
-/* Alert list */
-.alert-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 10px}
-.alert-list::-webkit-scrollbar{width:4px}
-.alert-list::-webkit-scrollbar-track{background:transparent}
-.alert-list::-webkit-scrollbar-thumb{background:var(--mut);border-radius:2px}
+/* Alert feed */
+.feed{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 8px}
+.feed::-webkit-scrollbar{width:3px}
+.feed::-webkit-scrollbar-track{background:transparent}
+.feed::-webkit-scrollbar-thumb{background:var(--tx4);border-radius:2px}
 
-.acard{
-  background:var(--s2);border:1px solid var(--brd);border-radius:8px;
-  margin-bottom:6px;overflow:hidden;transition:.15s;cursor:default;
-  animation:slideUp .3s ease-out;
+.card{
+  border:1px solid var(--brd);border-radius:10px;
+  margin-bottom:5px;overflow:hidden;transition:.2s;
+  background:var(--s2);
+  animation:cardIn .25s ease-out;
 }
-.acard:hover{border-color:var(--brd2)}
-@keyframes slideUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{border-color:var(--brd2);background:var(--s3)}
+@keyframes cardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-.acard.critical{border-color:rgba(255,34,48,.2);background:linear-gradient(135deg,rgba(255,34,48,.04),var(--s2))}
-.acard.warning{border-color:rgba(255,168,0,.15);background:linear-gradient(135deg,rgba(255,168,0,.03),var(--s2))}
-.acard.info{border-color:rgba(58,139,255,.15)}
-.acard.clear{border-color:rgba(0,232,123,.12)}
+.card.critical{border-color:rgba(239,51,64,.18)}
+.card.critical:hover{border-color:rgba(239,51,64,.3)}
+.card.warning{border-color:rgba(240,160,48,.12)}
+.card.info{border-color:rgba(64,148,255,.12)}
 
-.acard-inner{display:flex}
-.astripe{width:3px;flex-shrink:0}
-.acard.critical .astripe{background:var(--red)}
-.acard.warning .astripe{background:var(--amb)}
-.acard.info .astripe{background:var(--blu)}
-.acard.clear .astripe{background:var(--grn)}
-.acard.default .astripe{background:var(--mut)}
+.card-in{display:flex}
+.stripe{width:3px;flex-shrink:0;border-radius:0 2px 2px 0}
+.card.critical .stripe{background:var(--red)}
+.card.warning .stripe{background:var(--amb)}
+.card.info .stripe{background:var(--blu)}
+.card.clear .stripe{background:var(--grn)}
+.card.default .stripe{background:var(--tx4)}
 
-.abody{padding:10px 12px;flex:1;min-width:0}
-.atext{font-size:13px;line-height:1.6;word-break:break-word}
-.atext a{color:var(--blu);text-decoration:none}
-.ameta{
-  margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-  font-size:9px;color:var(--mut);direction:ltr;
+.card-body{padding:10px 12px;flex:1;min-width:0}
+.card-txt{font-size:13px;line-height:1.65;word-break:break-word;color:var(--tx)}
+.card-txt a{color:var(--blu);text-decoration:none}
+
+.card-foot{
+  margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:9px;color:var(--tx4);direction:ltr;
 }
-.stag{
-  padding:1px 5px;border-radius:3px;font-weight:700;font-size:8px;
+.sev{
+  padding:2px 6px;border-radius:4px;font-weight:600;font-size:8.5px;
   letter-spacing:.3px;text-transform:uppercase;
 }
-.stag.critical{background:rgba(255,34,48,.12);color:var(--red)}
-.stag.warning{background:rgba(255,168,0,.1);color:var(--amb)}
-.stag.info{background:rgba(58,139,255,.1);color:var(--blu)}
-.stag.clear{background:rgba(0,232,123,.1);color:var(--grn)}
-.loc-tag{color:var(--dim);display:flex;align-items:center;gap:3px}
+.sev.critical{background:rgba(239,51,64,.1);color:var(--red2)}
+.sev.warning{background:rgba(240,160,48,.08);color:var(--amb)}
+.sev.info{background:rgba(64,148,255,.08);color:var(--blu)}
+.sev.clear{background:rgba(16,216,112,.08);color:var(--grn)}
+.loc{color:var(--tx3)}
+.ago{color:var(--tx4);font-style:italic}
 
-.acard.flash{animation:flashNew 1.2s ease-out}
-@keyframes flashNew{0%{background:rgba(255,34,48,.12);transform:scale(1.005)}100%{background:var(--s2);transform:scale(1)}}
+.card.flash{animation:flash 1s ease-out}
+@keyframes flash{0%{background:rgba(239,51,64,.1);border-color:rgba(239,51,64,.4)}50%{border-color:rgba(239,51,64,.2)}100%{background:var(--s2)}}
 
-.empty{text-align:center;padding:40px 20px;color:var(--dim)}
-.spinner{width:24px;height:24px;border:2px solid var(--brd);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:48px 20px;color:var(--tx3);font-size:13px}
+.spin{width:20px;height:20px;border:2px solid var(--brd);border-top-color:var(--red);border-radius:50%;animation:sp .6s linear infinite;margin:0 auto 14px}
+@keyframes sp{to{transform:rotate(360deg)}}
 
 /* ═══ MOBILE ═══ */
 @media(max-width:860px){
-  .app{grid-template-columns:1fr;grid-template-rows:auto 40vh 1fr}
-  .map-panel{grid-row:2}
-  .feed-panel{grid-row:3;border-right:none;border-top:1px solid var(--brd)}
-  .header{height:46px;padding:0 14px}
-  .brand h1{font-size:13px}
-  .filters{padding:6px 10px}
-  .alert-list{padding:4px 8px}
-  .clock{display:none}
+  .shell{grid-template-columns:1fr;grid-template-rows:48px 38vh 1fr}
+  .map-wrap{grid-row:2}.side{grid-row:3;border-right:none;border-top:1px solid var(--brd)}
+  .hdr{padding:0 12px}.logo-txt{font-size:12px}.logo-sub{display:none}
+  .side{min-height:0}.feed{padding:4px 6px}.ftrs{padding:6px 8px}
+  .clk{display:none}
 }
 </style>
 </head>
 <body>
 
-<div class="app">
+<div class="shell">
 
-<header class="header">
-  <div class="h-right">
-    <div class="brand">
-      <div class="brand-icon">🚨</div>
-      <div>
-        <h1>COMMAND CENTER</h1>
-        <div class="sub mono">BEFORE RED ALERT</div>
-      </div>
+<header class="hdr">
+  <div class="hdr-r">
+    <div class="logo">
+      <div class="logo-mark mono">SIG</div>
+      <span class="logo-txt">SIGINT</span>
+      <span class="logo-sub mono">BEFORE RED ALERT</span>
     </div>
   </div>
-  <div class="h-left">
-    <div class="clock mono" id="clock"></div>
-    <button class="snd-btn" id="sndBtn" title="Sound">🔇</button>
-    <div class="live mono" id="badge"><span class="d"></span><span id="badgeTxt">INIT</span></div>
+  <div class="hdr-l">
+    <span class="clk mono" id="clk"></span>
+    <button class="ibtn" id="snd" title="Sound">🔇</button>
+    <div class="pill live mono" id="pill"><span class="dot"></span><span id="ptxt">INIT</span></div>
   </div>
 </header>
 
-<div class="map-panel">
+<div class="map-wrap">
   <div id="map"></div>
-  <div class="map-stats">
-    <div class="mstat mono"><span class="sd" style="background:var(--red)"></span><span id="mc">0</span> שיגורים</div>
-    <div class="mstat mono"><span class="sd" style="background:var(--amb)"></span><span id="mw">0</span> אזהרות</div>
-    <div class="mstat mono"><span class="sd" style="background:var(--grn)"></span><span id="upd">--:--</span></div>
+  <div class="map-rt"><span class="rt-dot"></span><span class="mono">REALTIME &lt;30 MIN</span></div>
+  <div class="hud hud-top">
+    <div class="chip mono"><span class="cd" style="background:var(--red)"></span><span id="sc">0</span></div>
+    <div class="chip mono"><span class="cd" style="background:var(--amb)"></span><span id="sw">0</span></div>
+    <div class="chip mono"><span class="cd" style="background:var(--grn)"></span><span id="ut">--:--</span></div>
   </div>
-  <div class="map-disclaimer">⚠ מקור לא רשמי — פעלו לפי פיקוד העורף בלבד</div>
+  <div class="hud hud-bot"><div class="chip chip-warn">⚠ לא רשמי — פעלו לפי פיקוד העורף</div></div>
 </div>
 
-<div class="feed-panel">
-  <div class="feed-head">
-    <h2>📡 פיד התרעות <span class="feed-count mono" id="fcount">0</span></h2>
+<div class="side">
+  <div class="side-hdr">
+    <span class="side-title">FEED</span>
+    <span class="badge mono" id="fc">0</span>
   </div>
-  <div class="filters" id="filters">
-    <button class="fbtn active" data-filter="all">הכל</button>
-    <button class="fbtn sev-critical" data-filter="critical">🔴 שיגורים</button>
-    <button class="fbtn sev-warning" data-filter="warning">🟠 אזהרות</button>
-    <button class="fbtn sev-info" data-filter="info">🔵 יירוטים</button>
-    <span style="width:1px;background:var(--brd);margin:0 2px"></span>
-    <button class="fbtn" data-region="צפון">צפון</button>
-    <button class="fbtn" data-region="מרכז">מרכז</button>
-    <button class="fbtn" data-region="דרום">דרום</button>
-    <button class="fbtn" data-region="ירושלים">י-ם</button>
+  <div class="ftrs" id="ftrs">
+    <button class="ft on" data-f="all">הכל</button>
+    <button class="ft f-crit" data-f="critical">שיגורים</button>
+    <button class="ft f-warn" data-f="warning">אזהרות</button>
+    <button class="ft f-info" data-f="info">יירוטים</button>
+    <div class="ft-sep"></div>
+    <button class="ft" data-r="צפון">צפון</button>
+    <button class="ft" data-r="מרכז">מרכז</button>
+    <button class="ft" data-r="דרום">דרום</button>
+    <button class="ft" data-r="ירושלים">י-ם</button>
   </div>
-  <div class="alert-list" id="list">
-    <div class="empty"><div class="spinner"></div>מתחבר...</div>
-  </div>
+  <div class="feed" id="feed"><div class="empty"><div class="spin"></div>מתחבר...</div></div>
 </div>
 
 </div>
 
 <script>
-let allAlerts=[], knownIds=new Set(), isFirst=true, activeSev='all', activeRegion=null, markers=[], soundOn=false, audioCtx=null;
+// ═══ STATE ═══
+let all=[],known=new Set(),first=true,fSev='all',fReg=null,mks=[],sndOn=false,actx=null;
+const MAP_MAX_AGE=30; // only show markers < 30 min old
 
-// ═══ MAP — using Stamen Toner which is more visible ═══
-const map = L.map('map',{center:[31.5,34.9],zoom:8,zoomControl:true,attributionControl:false});
+// ═══ MAP ═══
+const map=L.map('map',{center:[31.5,34.85],zoom:8,zoomControl:false,attributionControl:false});
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
-// Add labels on top so they're readable
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:18,pane:'overlayPane'}).addTo(map);
 
-function makeIcon(sev){
-  const c={critical:'#ff2230',warning:'#ffa800',info:'#3a8bff',clear:'#00e87b',default:'#50506a'}[sev]||'#50506a';
-  const size = sev==='critical' ? 24 : 18;
-  return L.divIcon({
-    className:'',iconSize:[size,size],iconAnchor:[size/2,size/2],
-    html:`<div style="position:relative;width:${size}px;height:${size}px">
-      <div style="position:absolute;inset:0;background:${c};border-radius:50%;opacity:.25;animation:pulse-ring 2s ease-out infinite"></div>
-      <div style="position:absolute;top:${size*.25}px;left:${size*.25}px;width:${size*.5}px;height:${size*.5}px;background:${c};border-radius:50%;box-shadow:0 0 12px ${c},0 0 24px ${c}40;animation:pulse-core 2s ease-in-out infinite"></div>
+function mkIcon(sev,age){
+  const cols={critical:'#ef3340',warning:'#f0a030',info:'#4094ff',clear:'#10d870',default:'#484860'};
+  const c=cols[sev]||cols.default;
+  // Opacity decays: 1.0 at 0min → 0.3 at 30min
+  const op=Math.max(.3,1-(age/MAP_MAX_AGE)*.7).toFixed(2);
+  const sz=sev==='critical'?26:18;
+  const r=sz/2;
+  return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[r,r],
+    html:`<div style="opacity:${op};position:relative;width:${sz}px;height:${sz}px">
+      <div style="position:absolute;inset:0;background:${c};border-radius:50%;opacity:.2;animation:ring 2.2s ease-out infinite"></div>
+      ${sev==='critical'?`<div style="position:absolute;inset:-4px;background:${c};border-radius:50%;opacity:.1;animation:ring 2.2s ease-out .4s infinite"></div>`:''}
+      <div style="position:absolute;top:${sz*.25}px;left:${sz*.25}px;width:${sz*.5}px;height:${sz*.5}px;background:${c};border-radius:50%;box-shadow:0 0 10px ${c};animation:core 2s ease-in-out infinite"></div>
     </div>`
   });
 }
 
-function updateMarkers(alerts){
-  markers.forEach(m=>map.removeLayer(m));markers=[];
+function updateMap(alerts){
+  mks.forEach(m=>map.removeLayer(m));mks=[];
   const seen=new Set();
-  for(const a of alerts){
+  // Only recent alerts on map
+  const recent=alerts.filter(a=>(a.age||999)<MAP_MAX_AGE);
+  for(const a of recent){
     if(!a.locations)continue;
     for(const loc of a.locations){
       const k=`${loc.lat},${loc.lng}`;
       if(seen.has(k))continue;seen.add(k);
-      const m=L.marker([loc.lat,loc.lng],{icon:makeIcon(a.severity)})
-        .bindPopup(`<div dir="rtl" style="font-family:Heebo;font-size:13px;max-width:220px;line-height:1.5">${a.text.substring(0,150)}${a.text.length>150?'...':''}</div>`)
+      const m=L.marker([loc.lat,loc.lng],{icon:mkIcon(a.severity,a.age||0)})
+        .bindPopup(`<div dir="rtl" style="font-family:Heebo;font-size:12px;max-width:200px;line-height:1.5;padding:2px">${a.text.substring(0,140)}${a.text.length>140?'…':''}<br><span style="color:var(--tx3);font-size:10px">${fmtAgo(a.age)}</span></div>`)
         .addTo(map);
-      markers.push(m);
+      mks.push(m);
     }
   }
 }
 
 // ═══ SOUND ═══
 function beep(){
-  if(!soundOn)return;
-  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.connect(g);g.connect(audioCtx.destination);o.type='square';
-  o.frequency.setValueAtTime(880,audioCtx.currentTime);
-  o.frequency.setValueAtTime(660,audioCtx.currentTime+.1);
-  o.frequency.setValueAtTime(880,audioCtx.currentTime+.2);
-  g.gain.setValueAtTime(.12,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.4);
-  o.start();o.stop(audioCtx.currentTime+.4);
+  if(!sndOn)return;
+  if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.connect(g);g.connect(actx.destination);
+  o.type='sine';
+  o.frequency.setValueAtTime(1200,actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(800,actx.currentTime+.15);
+  o.frequency.exponentialRampToValueAtTime(1200,actx.currentTime+.3);
+  g.gain.setValueAtTime(.1,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.35);
+  o.start();o.stop(actx.currentTime+.35);
 }
-document.getElementById('sndBtn').onclick=()=>{
-  soundOn=!soundOn;const b=document.getElementById('sndBtn');
-  b.textContent=soundOn?'🔊':'🔇';b.classList.toggle('on',soundOn);
-  if(soundOn&&!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  if(audioCtx)audioCtx.resume();
+document.getElementById('snd').onclick=()=>{
+  sndOn=!sndOn;const b=document.getElementById('snd');
+  b.textContent=sndOn?'🔊':'🔇';b.classList.toggle('on',sndOn);
+  if(sndOn){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();actx.resume()}
 };
 
 // ═══ CLOCK ═══
-function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Jerusalem'})}
+const tick=()=>document.getElementById('clk').textContent=
+  new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:'Asia/Jerusalem'});
 tick();setInterval(tick,1000);
 
 // ═══ FILTERS ═══
-document.getElementById('filters').addEventListener('click',e=>{
-  const btn=e.target.closest('.fbtn');if(!btn)return;
-  if(btn.dataset.filter){
-    document.querySelectorAll('[data-filter]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');activeSev=btn.dataset.filter;activeRegion=null;
-    document.querySelectorAll('[data-region]').forEach(b=>b.classList.remove('active'));
-  }else if(btn.dataset.region){
-    const was=btn.classList.contains('active');
-    document.querySelectorAll('[data-region]').forEach(b=>b.classList.remove('active'));
-    if(!was){btn.classList.add('active');activeRegion=btn.dataset.region}else{activeRegion=null}
+document.getElementById('ftrs').onclick=e=>{
+  const b=e.target.closest('.ft');if(!b)return;
+  if(b.dataset.f){
+    document.querySelectorAll('[data-f]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');fSev=b.dataset.f;fReg=null;
+    document.querySelectorAll('[data-r]').forEach(x=>x.classList.remove('on'));
+  }else if(b.dataset.r){
+    const was=b.classList.contains('on');
+    document.querySelectorAll('[data-r]').forEach(x=>x.classList.remove('on'));
+    fReg=was?null:b.dataset.r;if(!was)b.classList.add('on');
   }
-  renderList();
-});
+  render();
+};
 
-// ═══ RENDER ═══
-function filtered(){
-  return allAlerts.filter(a=>{
-    if(activeSev!=='all'&&a.severity!==activeSev)return false;
-    if(activeRegion&&a.region!==activeRegion)return false;
+// ═══ HELPERS ═══
+function fmtAgo(min){
+  if(min==null||min>999)return '';
+  if(min<1)return 'עכשיו';
+  if(min<60)return `לפני ${min} דק׳`;
+  return `לפני ${Math.floor(min/60)} שע׳`;
+}
+function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+function getFiltered(){
+  return all.filter(a=>{
+    if(fSev!=='all'&&a.severity!==fSev)return false;
+    if(fReg&&a.region!==fReg)return false;
     return true;
   });
 }
 
-function renderList(){
-  const list=document.getElementById('list'),show=filtered();
-  document.getElementById('fcount').textContent=show.length;
-  if(!show.length){list.innerHTML='<div class="empty" style="padding:30px">אין התרעות תואמות</div>';return}
-  const newIds=new Set(allAlerts.map(a=>a.id));
+// ═══ RENDER ═══
+function render(){
+  const f=document.getElementById('feed'),show=getFiltered();
+  document.getElementById('fc').textContent=show.length;
+  if(!show.length){f.innerHTML='<div class="empty">אין התרעות</div>';return}
+
   let h='';
   for(const a of show){
-    const isNew=!isFirst&&!knownIds.has(a.id);
+    const isNew=!first&&!known.has(a.id);
     if(isNew&&a.severity==='critical')beep();
     const t=a.datetime?new Date(a.datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jerusalem'}):'';
-    const sevL={critical:'שיגור',warning:'אזהרה',info:'יירוט',clear:'שגרה'}[a.severity]||'';
+    const sl={critical:'שיגור',warning:'אזהרה',info:'יירוט',clear:'שגרה'}[a.severity]||'';
     const locs=(a.locations||[]).map(l=>l.name).join(', ');
-    h+=`<div class="acard ${a.severity} ${isNew?'flash':''}">
-      <div class="acard-inner"><div class="astripe"></div><div class="abody">
-        <div class="atext">${a.html||esc(a.text)}</div>
-        <div class="ameta mono">
-          ${sevL?`<span class="stag ${a.severity}">${sevL}</span>`:''}
-          ${locs?`<span class="loc-tag">📍 ${locs}</span>`:''}
+    const ago=fmtAgo(a.age);
+
+    h+=`<div class="card ${a.severity} ${isNew?'flash':''}"><div class="card-in">
+      <div class="stripe"></div>
+      <div class="card-body">
+        <div class="card-txt">${a.html||esc(a.text)}</div>
+        <div class="card-foot mono">
+          ${sl?`<span class="sev ${a.severity}">${sl}</span>`:''}
+          ${locs?`<span class="loc">📍 ${locs}</span>`:''}
           <span>${t}</span>
-          ${a.views?`<span>👁 ${a.views}</span>`:''}
+          ${ago?`<span class="ago">${ago}</span>`:''}
         </div>
-      </div></div>
-    </div>`;
+      </div>
+    </div></div>`;
   }
-  list.innerHTML=h;
+  f.innerHTML=h;
 }
 
-function esc(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
-
-function processAlerts(alerts){
+function process(alerts){
   if(!alerts?.length)return;
-  allAlerts=alerts;
-  let crits=0,warns=0;
-  alerts.forEach(a=>{if(a.severity==='critical')crits++;if(a.severity==='warning')warns++});
-  document.getElementById('mc').textContent=crits;
-  document.getElementById('mw').textContent=warns;
-  updateMarkers(filtered());
-  renderList();
-  knownIds=new Set(alerts.map(a=>a.id));
-  isFirst=false;
+  all=alerts;
+  let c=0,w=0;
+  alerts.forEach(a=>{if(a.severity==='critical')c++;if(a.severity==='warning')w++});
+  document.getElementById('sc').textContent=c;
+  document.getElementById('sw').textContent=w;
+  updateMap(getFiltered());
+  render();
+  known=new Set(alerts.map(a=>a.id));
+  first=false;
 }
 
 // ═══ SSE ═══
-let evtSrc=null;
 function connect(){
-  if(evtSrc)evtSrc.close();
-  evtSrc=new EventSource('/api/stream');
-  const badge=document.getElementById('badge'),btxt=document.getElementById('badgeTxt');
-  evtSrc.onopen=()=>{badge.className='live mono ok';btxt.textContent='LIVE'};
-  evtSrc.onmessage=e=>{
+  const es=new EventSource('/api/stream');
+  const pill=document.getElementById('pill'),pt=document.getElementById('ptxt');
+  es.onopen=()=>{pill.className='pill live mono';pt.textContent='LIVE'};
+  es.onmessage=e=>{
     try{
       const d=JSON.parse(e.data);
-      if(d.type==='init'||d.type==='update'){
-        processAlerts(d.alerts);
-        if(d.lastUpdate)document.getElementById('upd').textContent=new Date(d.lastUpdate).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Jerusalem'});
-      }
-      if(d.status==='live'){badge.className='live mono ok';btxt.textContent='LIVE'}
-      if(d.status==='error'){badge.className='live mono';btxt.textContent='ERR'}
-    }catch(err){console.error(err)}
+      if(d.alerts)process(d.alerts);
+      if(d.lastUpdate)document.getElementById('ut').textContent=
+        new Date(d.lastUpdate).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Jerusalem'});
+      if(d.status==='live'){pill.className='pill live mono';pt.textContent='LIVE'}
+      if(d.status==='error'){pill.className='pill err mono';pt.textContent='ERR'}
+    }catch(x){}
   };
-  evtSrc.onerror=()=>{
-    badge.className='live mono';btxt.textContent='RECONN';
-    evtSrc.close();setTimeout(connect,5000);
-  };
+  es.onerror=()=>{pill.className='pill err mono';pt.textContent='RETRY';es.close();setTimeout(connect,4000)};
 }
 connect();
 </script>
