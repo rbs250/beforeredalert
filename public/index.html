@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🚨 התרעות שיגורים — LIVE</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚨</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06060c;
+    --surface: #0d0d16;
+    --surface-2: #14141f;
+    --surface-3: #1c1c2a;
+    --red: #ff2a2a;
+    --red-dim: #991a1a;
+    --red-glow: rgba(255, 42, 42, 0.25);
+    --amber: #ffaa00;
+    --amber-glow: rgba(255, 170, 0, 0.2);
+    --green: #00e87b;
+    --green-glow: rgba(0, 232, 123, 0.2);
+    --blue: #3a8bff;
+    --text: #e4e4f0;
+    --text-dim: #555570;
+    --text-muted: #3a3a50;
+    --border: #1e1e30;
+    --border-light: #2a2a40;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Heebo', sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(6, 6, 12, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+  }
+
+  .header-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--red), #b00);
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    box-shadow: 0 0 24px var(--red-glow);
+    animation: glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 16px var(--red-glow); }
+    to { box-shadow: 0 0 32px rgba(255, 42, 42, 0.4); }
+  }
+
+  .brand-text h1 {
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-text .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    direction: ltr;
+    min-width: 70px;
+    text-align: center;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 42, 42, 0.08);
+    border: 1px solid rgba(255, 42, 42, 0.2);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 1.5px;
+  }
+
+  .live-badge .dot {
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  .live-badge.connected .dot { background: var(--green); }
+  .live-badge.connected { color: var(--green); border-color: rgba(0,232,123,0.2); background: rgba(0,232,123,0.06); }
+  .live-badge.error .dot { background: var(--amber); }
+  .live-badge.error { color: var(--amber); border-color: rgba(255,170,0,0.2); background: rgba(255,170,0,0.06); }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ─── Warning banner ─── */
+  .warning-bar {
+    max-width: 720px;
+    margin: 12px auto 0;
+    padding: 0 20px;
+  }
+
+  .warning-bar-inner {
+    background: rgba(255, 170, 0, 0.06);
+    border: 1px solid rgba(255, 170, 0, 0.15);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ─── Stats row ─── */
+  .stats {
+    max-width: 720px;
+    margin: 12px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-dim);
+  }
+
+  .stat-chip .sdot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+
+  /* ─── Feed ─── */
+  .feed {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .alert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+    animation: slideIn 0.35s ease-out;
+  }
+
+  .alert-card:hover {
+    border-color: var(--border-light);
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .alert-card.critical {
+    border-color: rgba(255, 42, 42, 0.3);
+    background: linear-gradient(135deg, rgba(255, 42, 42, 0.06), var(--surface));
+  }
+
+  .alert-card.critical .alert-stripe { background: var(--red); }
+
+  .alert-card.warning {
+    border-color: rgba(255, 170, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 170, 0, 0.04), var(--surface));
+  }
+
+  .alert-card.warning .alert-stripe { background: var(--amber); }
+
+  .alert-card.info {
+    border-color: rgba(58, 139, 255, 0.2);
+  }
+
+  .alert-card.info .alert-stripe { background: var(--blue); }
+
+  .alert-card.default .alert-stripe { background: var(--text-muted); }
+
+  .alert-inner {
+    display: flex;
+  }
+
+  .alert-stripe {
+    width: 4px;
+    flex-shrink: 0;
+    background: var(--text-muted);
+  }
+
+  .alert-body {
+    padding: 12px 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .alert-text {
+    font-size: 14px;
+    line-height: 1.65;
+    word-break: break-word;
+  }
+
+  .alert-text a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  .alert-meta {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    direction: ltr;
+  }
+
+  .alert-meta .severity-tag {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .severity-tag.critical { background: rgba(255,42,42,0.15); color: var(--red); }
+  .severity-tag.warning { background: rgba(255,170,0,0.12); color: var(--amber); }
+  .severity-tag.info { background: rgba(58,139,255,0.12); color: var(--blue); }
+
+  /* ─── New alert flash ─── */
+  .alert-card.new {
+    animation: flashNew 1.5s ease-out;
+  }
+
+  @keyframes flashNew {
+    0% { background: rgba(255, 42, 42, 0.15); transform: scale(1.01); }
+    100% { background: var(--surface); transform: scale(1); }
+  }
+
+  /* ─── Empty state ─── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty-state .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── Connection lost banner ─── */
+  .conn-lost {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255, 170, 0, 0.12);
+    border-top: 1px solid rgba(255, 170, 0, 0.3);
+    padding: 10px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    backdrop-filter: blur(12px);
+    z-index: 200;
+    display: none;
+  }
+
+  .conn-lost.show { display: block; }
+
+  /* ─── Sound toggle ─── */
+  .sound-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s;
+  }
+
+  .sound-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .sound-btn.active { border-color: var(--green); color: var(--green); background: rgba(0,232,123,0.06); }
+
+  /* ─── Mobile ─── */
+  @media (max-width: 600px) {
+    .header { padding: 10px 14px; }
+    .brand-text h1 { font-size: 15px; }
+    .feed { padding: 0 14px 60px; }
+    .warning-bar, .stats { padding: 0 14px; }
+    .alert-text { font-size: 13px; }
+    .clock { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🚨</div>
+      <div class="brand-text">
+        <h1>התרעות שיגורים</h1>
+        <div class="sub">BEFORE RED ALERT</div>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="clock" id="clock"></div>
+      <button class="sound-btn" id="soundBtn" title="הפעל/כבה צליל">🔇</button>
+      <div class="live-badge" id="liveBadge">
+        <span class="dot"></span>
+        <span id="liveText">CONNECTING</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="warning-bar">
+  <div class="warning-bar-inner">
+    <span>⚠️</span>
+    <span>מקור לא רשמי — פעלו לפי הנחיות פיקוד העורף בלבד</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-chip"><span class="sdot" style="background:var(--red)"></span> <span id="critCount">0</span> שיגורים</div>
+  <div class="stat-chip"><span class="sdot" style="background:var(--amber)"></span> <span id="warnCount">0</span> אזהרות</div>
+  <div class="stat-chip"><span class="sdot" style="background:var(--green)"></span> עדכון: <span id="lastUpdateTime">--</span></div>
+</div>
+
+<main class="feed" id="feed">
+  <div class="empty-state" id="emptyState">
+    <div class="spinner"></div>
+    <div>מתחבר לערוץ...</div>
+  </div>
+</main>
+
+<div class="conn-lost" id="connLost">⚠ חיבור נותק — מנסה להתחבר מחדש...</div>
+
+<!-- Alert sound (short beep, generated inline) -->
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let soundEnabled = false;
+
+function playAlertSound() {
+  if (!soundEnabled) return;
+  if (!audioCtx) audioCtx = new AudioCtx();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+  osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.1);
+  osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.2);
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.4);
+}
+
+document.getElementById('soundBtn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundBtn');
+  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.classList.toggle('active', soundEnabled);
+  if (soundEnabled) {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    audioCtx.resume();
+  }
+});
+
+// ─── Clock ────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Jerusalem' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ─── Severity classification ─────────────────────────────
+function classify(text) {
+  const t = text.toLowerCase();
+  if (t.includes('שיגור') || t.includes('טיל') || t.includes('רקטה') || t.includes('ירי') || t.includes('launch') || t.includes('missile') || t.includes('באלי'))
+    return 'critical';
+  if (t.includes('אזעקה') || t.includes('צבע אדום') || t.includes('red alert') || t.includes('אזהרה') || t.includes('התרעה'))
+    return 'warning';
+  if (t.includes('ירוט') || t.includes('יירוט') || t.includes('intercept'))
+    return 'info';
+  return 'default';
+}
+
+// ─── Render alerts ────────────────────────────────────────
+let knownIds = new Set();
+let isFirstLoad = true;
+
+function renderAlerts(alerts) {
+  const feed = document.getElementById('feed');
+  const empty = document.getElementById('emptyState');
+
+  if (!alerts || alerts.length === 0) return;
+  if (empty) empty.remove();
+
+  // Count severities
+  let crits = 0, warns = 0;
+  alerts.forEach(a => {
+    const s = a.severity || classify(a.text);
+    if (s === 'critical') crits++;
+    if (s === 'warning') warns++;
+  });
+  document.getElementById('critCount').textContent = crits;
+  document.getElementById('warnCount').textContent = warns;
+
+  // Build HTML
+  const newAlertIds = new Set(alerts.map(a => a.id));
+  let html = '';
+
+  for (const alert of alerts) {
+    const sev = alert.severity || classify(alert.text);
+    const isNew = !isFirstLoad && !knownIds.has(alert.id);
+    const time = alert.datetime
+      ? new Date(alert.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' })
+      : '';
+    const date = alert.datetime
+      ? new Date(alert.datetime).toLocaleDateString('he-IL', { day: 'numeric', month: 'short', timeZone: 'Asia/Jerusalem' })
+      : '';
+
+    if (isNew) playAlertSound();
+
+    html += `
+      <div class="alert-card ${sev} ${isNew ? 'new' : ''}">
+        <div class="alert-inner">
+          <div class="alert-stripe"></div>
+          <div class="alert-body">
+            <div class="alert-text">${alert.html || escapeHtml(alert.text)}</div>
+            <div class="alert-meta">
+              ${sev !== 'default' ? `<span class="severity-tag ${sev}">${sevLabel(sev)}</span>` : ''}
+              <span>${time}</span>
+              <span>${date}</span>
+              ${alert.views ? `<span>👁 ${alert.views}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  feed.innerHTML = html;
+  knownIds = newAlertIds;
+  isFirstLoad = false;
+}
+
+function sevLabel(s) {
+  if (s === 'critical') return 'שיגור';
+  if (s === 'warning') return 'אזהרה';
+  if (s === 'info') return 'יירוט';
+  return '';
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+// ─── SSE Connection ───────────────────────────────────────
+let evtSource = null;
+let retryTimeout = null;
+
+function connect() {
+  const badge = document.getElementById('liveBadge');
+  const liveText = document.getElementById('liveText');
+  const connLost = document.getElementById('connLost');
+
+  if (evtSource) evtSource.close();
+
+  evtSource = new EventSource('/api/stream');
+
+  evtSource.onopen = () => {
+    badge.className = 'live-badge connected';
+    liveText.textContent = 'LIVE';
+    connLost.classList.remove('show');
+  };
+
+  evtSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+
+      if (data.type === 'init' || data.type === 'update') {
+        renderAlerts(data.alerts);
+        if (data.lastUpdate) {
+          const t = new Date(data.lastUpdate);
+          document.getElementById('lastUpdateTime').textContent =
+            t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jerusalem' });
+        }
+      }
+
+      if (data.status === 'error') {
+        badge.className = 'live-badge error';
+        liveText.textContent = 'ERROR';
+      } else if (data.status === 'live') {
+        badge.className = 'live-badge connected';
+        liveText.textContent = 'LIVE';
+      }
+    } catch (e) {
+      console.error('Parse error:', e);
+    }
+  };
+
+  evtSource.onerror = () => {
+    badge.className = 'live-badge error';
+    liveText.textContent = 'RECONNECTING';
+    connLost.classList.add('show');
+    evtSource.close();
+
+    // Retry in 5 seconds
+    clearTimeout(retryTimeout);
+    retryTimeout = setTimeout(connect, 5000);
+  };
+}
+
+// ─── Fallback polling if SSE not available ────────────────
+async function fallbackPoll() {
+  try {
+    const res = await fetch('/api/alerts');
+    const data = await res.json();
+    renderAlerts(data.alerts);
+
+    const badge = document.getElementById('liveBadge');
+    const liveText = document.getElementById('liveText');
+    badge.className = 'live-badge connected';
+    liveText.textContent = 'POLL';
+
+    if (data.lastUpdate) {
+      const t = new Date(data.lastUpdate);
+      document.getElementById('lastUpdateTime').textContent =
+        t.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jerusalem' });
+    }
+  } catch (e) {
+    console.error('Poll error:', e);
+  }
+}
+
+// ─── Init ─────────────────────────────────────────────────
+try {
+  connect();
+} catch (e) {
+  console.warn('SSE failed, falling back to polling');
+  setInterval(fallbackPoll, 15000);
+  fallbackPoll();
+}
+</script>
+
+</body>
+</html>

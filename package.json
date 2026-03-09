@@ -1,0 +1,15 @@
+{
+  "name": "beforeredalert-dashboard",
+  "version": "1.0.0",
+  "description": "Real-time alert dashboard pulling from @beforeredalert Telegram channel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "cheerio": "^1.0.0-rc.12"
+  }
+}
