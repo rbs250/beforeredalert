@@ -10,7 +10,27 @@ const CHANNEL = 'beforeredalert';
 const SCRAPE_URL = `https://t.me/s/${CHANNEL}`;
 const POLL_INTERVAL = 12000;
 
-// ─── Israeli locations → coordinates ──────────────────────
+// ─── Ad / spam detection ──────────────────────────────────
+const AD_PATTERNS = [
+  /תוכן\s*שיווקי/i,
+  /תוכןשיווקי/i,
+  /השקעה|השקעות|מסחר|טריידינג|trading/i,
+  /שוק ההון|בורסה|מניות|קריפטו|ביטקוין/i,
+  /financenews/i,
+  /הצטרפו\s*(לערוץ|לקבוצה|עכשיו)/i,
+  /👇👇👇👇/,
+  /הזדמנות|הזדמנויות השקעה/i,
+  /לכל העדכונים וכל הדרמה/i,
+  /צפו בתיעוד ה-?מ-?ט-?ו-?ר-?ף/i,
+  /תיעוד מטורף/i,
+  /🚫.*🚫/,
+];
+
+function isAd(text) {
+  return AD_PATTERNS.some(p => p.test(text));
+}
+
+// ─── Israeli locations ────────────────────────────────────
 const LOCATIONS = {
   'תל אביב': { lat: 32.0853, lng: 34.7818, region: 'מרכז' },
   'ת"א': { lat: 32.0853, lng: 34.7818, region: 'מרכז' },
@@ -62,6 +82,10 @@ const LOCATIONS = {
   'נגב': { lat: 31.00, lng: 34.80, region: 'דרום' },
   'הנגב': { lat: 31.00, lng: 34.80, region: 'דרום' },
   'קו העימות': { lat: 33.10, lng: 35.55, region: 'צפון' },
+  'איראן': { lat: 32.50, lng: 35.00, region: 'צפון' },
+  'מרכז': { lat: 32.05, lng: 34.82, region: 'מרכז' },
+  'צפון': { lat: 32.90, lng: 35.30, region: 'צפון' },
+  'דרום': { lat: 31.35, lng: 34.65, region: 'דרום' },
 };
 
 let alertCache = [];
@@ -69,11 +93,10 @@ let lastUpdate = null;
 let connectionStatus = 'connecting';
 
 function classify(text) {
-  const t = text;
-  if (/שיגור|טיל|רקטה|ירי|באליסטי|missile|launch|מל"ט|drone/.test(t)) return 'critical';
-  if (/אזעקה|צבע אדום|התרעה|אזהרה|red alert/.test(t)) return 'warning';
-  if (/יירוט|ירוט|intercept|הדף/.test(t)) return 'info';
-  if (/חדל|סיום|שגרה|ירידה/.test(t)) return 'clear';
+  if (/שיגור|טיל|רקטה|ירי|באליסטי|missile|launch|מל"ט|drone|טילים/.test(text)) return 'critical';
+  if (/אזעקה|צבע אדום|התרעה|אזהרה|red alert|סכנה/.test(text)) return 'warning';
+  if (/יירוט|ירוט|intercept|הדף|נפל/.test(text)) return 'info';
+  if (/חדל|סיום|שגרה|ירידה/.test(text)) return 'clear';
   return 'default';
 }
 
@@ -108,7 +131,7 @@ async function scrapeChannel() {
       const dt = $b.find('.tgme_widget_message_date time').attr('datetime') || '';
       const views = $b.find('.tgme_widget_message_views').text().trim();
 
-      if (plain.trim()) {
+      if (plain.trim() && !isAd(plain)) {
         const severity = classify(plain);
         const locations = extractLocations(plain);
         messages.push({
@@ -144,7 +167,7 @@ app.get('/api/alerts', (req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`\n🚨 COMMAND CENTER — http://localhost:${PORT}\n`);
+  console.log(`\n🚨 COMMAND CENTER v3 — http://localhost:${PORT}\n`);
   await scrapeChannel();
-  console.log(`   ${alertCache.length} alerts loaded\n`);
+  console.log(`   ${alertCache.length} alerts loaded (ads filtered)\n`);
 });
